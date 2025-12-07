@@ -69,10 +69,10 @@ python manage.py runserver 0.0.0.0:8080
 
 After running `init_aws`, verify in AWS Console:
 
-- ✅ DynamoDB: Tables `mypos-customers` and `mypos-transactions` exist
-- ✅ S3: Bucket `mypos-product-images` (or your custom name) exists
-- ✅ SNS: Topic `mypos-transaction-notifications` exists
-- ✅ CloudWatch: Metrics namespace `MyPOS/Transactions` will appear after first transaction
+-  DynamoDB: Tables `mypos-customers` and `mypos-transactions` exist
+-  S3: Bucket `mypos-product-images` (or your custom name) exists
+-  SNS: Topic `mypos-transaction-notifications` exists
+-  CloudWatch: Metrics namespace `MyPOS/Transactions` will appear after first transaction
 
 ## Next Steps
 
