@@ -1,6 +1,6 @@
 # ELB Deployment - Quick Start
 
-## 🚀 Quick Deployment Steps
+## Quick Deployment Steps
 
 ### 1. Create EC2 Instances
 - Launch 2 EC2 instances (t2.micro)
@@ -52,7 +52,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 ---
 
-## ⚙️ Security Groups
+## Security Groups
 
 **EC2 Security Group:**
 - Inbound: SSH (22) from your IP, HTTP (8080) from ALB SG
@@ -64,7 +64,7 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 ---
 
-## 🔍 Troubleshooting
+## Troubleshooting
 
 **Targets Unhealthy?**
 - Check security groups
