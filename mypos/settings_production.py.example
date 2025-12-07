@@ -1,0 +1,52 @@
+"""
+Production Settings Example for MyPOS
+Copy this to settings.py and modify as needed for production deployment
+"""
+
+# Import base settings
+from .settings import *
+
+# Production-specific overrides
+DEBUG = False
+
+# Update ALLOWED_HOSTS with your ALB DNS name or domain
+ALLOWED_HOSTS = [
+    'your-alb-dns-name.us-east-1.elb.amazonaws.com',
+    'yourdomain.com',  # If using custom domain
+]
+
+# Security settings for production
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = False  # ALB handles SSL termination
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# Update CSRF trusted origins
+CSRF_TRUSTED_ORIGINS = [
+    'https://your-alb-dns-name.us-east-1.elb.amazonaws.com',
+    'https://yourdomain.com',  # If using custom domain
+]
+
+# Static files - ensure collectstatic has been run
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Logging configuration for production
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'django.log',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
+
