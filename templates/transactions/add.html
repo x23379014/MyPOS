@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Transaction - MyPOS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Create New Transaction</h2>
+    <a href="{% url 'transaction_list' %}" class="btn btn-secondary">Back to Transactions</a>
+</div>
+
+<div class="form-container">
+    <form method="post" class="form" id="transaction-form">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="customer_id">Customer *</label>
+            <select id="customer_id" name="customer_id" required class="form-control">
+                <option value="">Select a customer</option>
+                {% for customer in customers %}
+                <option value="{{ customer.customer_id }}">{{ customer.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label>Products *</label>
+            <div id="products-container">
+                <div class="product-row">
+                    <select name="product_ids" class="form-control product-select" required>
+                        <option value="">Select a product</option>
+                        {% for product in products %}
+                        <option value="{{ product.id }}" data-price="{{ product.price }}">{{ product.name }} - ${{ product.price }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="number" name="quantities" min="1" value="1" class="form-control quantity-input" style="width: 100px;" required>
+                    <button type="button" class="btn btn-sm btn-secondary remove-product" style="display: none;">Remove</button>
+                </div>
+            </div>
+            <button type="button" id="add-product" class="btn btn-sm btn-secondary">Add Another Product</button>
+        </div>
+        
+        <div class="form-group">
+            <label>Total Amount: $<span id="total-amount">0.00</span></label>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Create Transaction</button>
+            <a href="{% url 'transaction_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const productsContainer = document.getElementById('products-container');
+    const addProductBtn = document.getElementById('add-product');
+    const totalAmountSpan = document.getElementById('total-amount');
+    
+    function calculateTotal() {
+        let total = 0;
+        const productRows = productsContainer.querySelectorAll('.product-row');
+        productRows.forEach(row => {
+            const select = row.querySelector('.product-select');
+            const quantity = row.querySelector('.quantity-input');
+            if (select.value && quantity.value) {
+                const price = parseFloat(select.options[select.selectedIndex].dataset.price) || 0;
+                const qty = parseInt(quantity.value) || 0;
+                total += price * qty;
+            }
+        });
+        totalAmountSpan.textContent = total.toFixed(2);
+    }
+    
+    addProductBtn.addEventListener('click', function() {
+        const newRow = document.createElement('div');
+        newRow.className = 'product-row';
+        newRow.innerHTML = `
+            <select name="product_ids" class="form-control product-select" required>
+                <option value="">Select a product</option>
+                {% for product in products %}
+                <option value="{{ product.id }}" data-price="{{ product.price }}">{{ product.name }} - ${{ product.price }}</option>
+                {% endfor %}
+            </select>
+            <input type="number" name="quantities" min="1" value="1" class="form-control quantity-input" style="width: 100px;" required>
+            <button type="button" class="btn btn-sm btn-secondary remove-product">Remove</button>
+        `;
+        productsContainer.appendChild(newRow);
+        
+        // Add event listeners to new row
+        newRow.querySelector('.product-select').addEventListener('change', calculateTotal);
+        newRow.querySelector('.quantity-input').addEventListener('input', calculateTotal);
+        newRow.querySelector('.remove-product').addEventListener('click', function() {
+            newRow.remove();
+            calculateTotal();
+        });
+    });
+    
+    // Add event listeners to existing elements
+    productsContainer.querySelectorAll('.product-select').forEach(select => {
+        select.addEventListener('change', calculateTotal);
+    });
+    productsContainer.querySelectorAll('.quantity-input').forEach(input => {
+        input.addEventListener('input', calculateTotal);
+    });
+    
+    // Remove product button
+    productsContainer.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-product')) {
+            if (productsContainer.querySelectorAll('.product-row').length > 1) {
+                e.target.closest('.product-row').remove();
+                calculateTotal();
+            }
+        }
+    });
+    
+    // Show remove button if more than one product
+    if (productsContainer.querySelectorAll('.product-row').length > 1) {
+        productsContainer.querySelectorAll('.remove-product').forEach(btn => {
+            btn.style.display = 'inline-block';
+        });
+    }
+});
+</script>
+{% endblock %}
+

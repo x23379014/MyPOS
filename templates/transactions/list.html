@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Transactions - MyPOS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Transactions</h2>
+    <a href="{% url 'transaction_add' %}" class="btn btn-primary">Create New Transaction</a>
+</div>
+
+{% if transactions %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Customer</th>
+                    <th>Items</th>
+                    <th>Total Amount</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                    <td>{{ transaction.transaction_id|truncatechars:20 }}</td>
+                    <td>{{ transaction.customer_name }}</td>
+                    <td>{{ transaction.products|length }} item(s)</td>
+                    <td>${{ transaction.total_amount|floatformat:2 }}</td>
+                    <td>{{ transaction.created_at|truncatechars:19 }}</td>
+                    <td class="actions">
+                        <a href="{% url 'transaction_view' transaction.transaction_id %}" class="btn btn-sm btn-view">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="empty-state">
+        <p>No transactions found. <a href="{% url 'transaction_add' %}">Create your first transaction</a></p>
+    </div>
+{% endif %}
+{% endblock %}
+

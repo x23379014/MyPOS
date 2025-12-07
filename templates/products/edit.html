@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Product - MyPOS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Edit Product</h2>
+    <a href="{% url 'product_list' %}" class="btn btn-secondary">Back to Products</a>
+</div>
+
+<div class="form-container">
+    <form method="post" enctype="multipart/form-data" class="form">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="name">Product Name *</label>
+            <input type="text" id="name" name="name" value="{{ product.name }}" required class="form-control">
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" rows="4" class="form-control">{{ product.description }}</textarea>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="price">Price *</label>
+                <input type="number" id="price" name="price" step="0.01" min="0" value="{{ product.price }}" required class="form-control">
+            </div>
+            
+            <div class="form-group">
+                <label for="quantity">Quantity</label>
+                <input type="number" id="quantity" name="quantity" min="0" value="{{ product.quantity }}" class="form-control">
+            </div>
+        </div>
+        
+        {% if product.s3_image_url %}
+        <div class="form-group">
+            <label>Current Image</label>
+            <img src="{{ product.s3_image_url }}" alt="{{ product.name }}" class="product-image-preview">
+        </div>
+        {% endif %}
+        
+        <div class="form-group">
+            <label for="image">Update Product Image</label>
+            <input type="file" id="image" name="image" accept="image/*" class="form-control">
+            <small>Leave empty to keep current image</small>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Update Product</button>
+            <a href="{% url 'product_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+

@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Products - MyPOS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Products</h2>
+    <a href="{% url 'product_add' %}" class="btn btn-primary">Add New Product</a>
+</div>
+
+{% if products %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Image</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>
+                        {% if product.s3_image_url %}
+                            <img src="{{ product.s3_image_url }}" alt="{{ product.name }}" class="product-image-small">
+                        {% else %}
+                            <span class="no-image">No Image</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.description|truncatewords:10 }}</td>
+                    <td>${{ product.price }}</td>
+                    <td>{{ product.quantity }}</td>
+                    <td class="actions">
+                        <a href="{% url 'product_edit' product.id %}" class="btn btn-sm btn-edit">Edit</a>
+                        <a href="{% url 'product_delete' product.id %}" class="btn btn-sm btn-delete">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="empty-state">
+        <p>No products found. <a href="{% url 'product_add' %}">Add your first product</a></p>
+    </div>
+{% endif %}
+{% endblock %}
+

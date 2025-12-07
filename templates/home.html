@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - MyPOS{% endblock %}
+
+{% block content %}
+<div class="home-page">
+    <h2>Welcome to MyPOS</h2>
+    <p class="subtitle">Simple Point of Sale System</p>
+    
+    <div class="dashboard-cards">
+        <div class="card">
+            <h3>Products</h3>
+            <p>Manage your product inventory</p>
+            <a href="{% url 'product_list' %}" class="btn btn-primary">View Products</a>
+        </div>
+        
+        <div class="card">
+            <h3>Customers</h3>
+            <p>Manage customer information</p>
+            <a href="{% url 'customer_list' %}" class="btn btn-primary">View Customers</a>
+        </div>
+        
+        <div class="card">
+            <h3>Transactions</h3>
+            <p>View and create transactions</p>
+            <a href="{% url 'transaction_list' %}" class="btn btn-primary">View Transactions</a>
+        </div>
+    </div>
+    
+    <div class="info-section">
+        <h3>Features</h3>
+        <ul>
+            <li>✅ Product Management (CRUD)</li>
+            <li>✅ Customer Management (CRUD) - Stored in DynamoDB</li>
+            <li>✅ Transaction Processing - Stored in DynamoDB</li>
+            <li>✅ Product Images - Stored in S3</li>
+            <li>✅ Transaction Notifications - SNS</li>
+            <li>✅ Transaction Metrics - CloudWatch</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}
+

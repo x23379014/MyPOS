@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Transaction Details - MyPOS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Transaction Details</h2>
+    <a href="{% url 'transaction_list' %}" class="btn btn-secondary">Back to Transactions</a>
+</div>
+
+<div class="transaction-details">
+    <div class="detail-card">
+        <h3>Transaction Information</h3>
+        <p><strong>Transaction ID:</strong> {{ transaction.transaction_id }}</p>
+        <p><strong>Date:</strong> {{ transaction.created_at }}</p>
+        <p><strong>Status:</strong> {{ transaction.status }}</p>
+    </div>
+    
+    {% if transaction.customer %}
+    <div class="detail-card">
+        <h3>Customer Information</h3>
+        <p><strong>Name:</strong> {{ transaction.customer.name }}</p>
+        <p><strong>Email:</strong> {{ transaction.customer.email }}</p>
+        <p><strong>Phone:</strong> {{ transaction.customer.phone }}</p>
+        <p><strong>Address:</strong> {{ transaction.customer.address }}</p>
+    </div>
+    {% endif %}
+    
+    <div class="detail-card">
+        <h3>Products</h3>
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in transaction.products %}
+                <tr>
+                    <td>{{ product.product_name }}</td>
+                    <td>{{ product.quantity }}</td>
+                    <td>${{ product.price|floatformat:2 }}</td>
+                    <td>${{ product.subtotal|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3"><strong>Total Amount:</strong></td>
+                    <td><strong>${{ transaction.total_amount|floatformat:2 }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+{% endblock %}
+

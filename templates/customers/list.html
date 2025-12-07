@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Customers - MyPOS{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Customers</h2>
+    <a href="{% url 'customer_add' %}" class="btn btn-primary">Add New Customer</a>
+</div>
+
+{% if customers %}
+    <div class="table-container">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td>{{ customer.name }}</td>
+                    <td>{{ customer.email }}</td>
+                    <td>{{ customer.phone }}</td>
+                    <td>{{ customer.address }}</td>
+                    <td class="actions">
+                        <a href="{% url 'customer_edit' customer.customer_id %}" class="btn btn-sm btn-edit">Edit</a>
+                        <a href="{% url 'customer_delete' customer.customer_id %}" class="btn btn-sm btn-delete">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="empty-state">
+        <p>No customers found. <a href="{% url 'customer_add' %}">Add your first customer</a></p>
+    </div>
+{% endif %}
+{% endblock %}
+
