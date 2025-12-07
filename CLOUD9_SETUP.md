@@ -7,6 +7,7 @@ Complete guide to set up MyPOS in AWS Cloud9 and pull from GitHub.
 - AWS Academy Learners Lab account
 - GitHub account (free account works)
 - Access to Cloud9 environment
+- **Platform**: Amazon Linux 2 or Amazon Linux 2023
 
 ---
 
@@ -67,7 +68,7 @@ git push -u origin main
 2. **Description**: "MyPOS Development Environment"
 3. **Environment type**: Choose **"Create a new EC2 instance for environment"**
 4. **Instance type**: `t2.micro` (free tier) or `t3.small`
-5. **Platform**: **Ubuntu Server**
+5. **Platform**: **Amazon Linux 2** (or Amazon Linux 2023)
 6. Click **"Next step"**
 7. Review and click **"Create environment"**
 
@@ -127,16 +128,29 @@ You should see:
 ### Step 1: Check Python Version
 
 ```bash
+# Check Python version (Amazon Linux usually has Python 3 pre-installed)
 python3 --version
-# Should show Python 3.x
+# Should show Python 3.x (typically 3.7+ on Amazon Linux 2, 3.9+ on Amazon Linux 2023)
+
+# If Python 3 is not found, install it:
+# For Amazon Linux 2:
+sudo yum install -y python3
+# For Amazon Linux 2023:
+sudo dnf install -y python3
 ```
 
 ### Step 2: Install Dependencies
 
 ```bash
-# Install pip if not already installed
-sudo apt-get update
-sudo apt-get install -y python3-pip
+# Update package manager (Amazon Linux uses yum)
+sudo yum update -y
+
+# Install Python 3 and pip (usually pre-installed on Amazon Linux)
+# Check if Python 3 is installed
+python3 --version
+
+# If pip3 is not installed, install it
+sudo yum install -y python3-pip
 
 # Install project dependencies
 pip3 install -r requirements.txt --user
@@ -151,6 +165,15 @@ source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
+```
+
+**Amazon Linux Note**: Python 3 and pip3 are usually pre-installed on Amazon Linux 2. If you need to install them manually:
+```bash
+# For Amazon Linux 2
+sudo yum install -y python3 python3-pip
+
+# For Amazon Linux 2023
+sudo dnf install -y python3 python3-pip
 ```
 
 ---
@@ -275,8 +298,10 @@ aws configure list
 
 **Solution**:
 ```bash
-# Find what's using port 8080
-sudo lsof -i :8080
+# Find what's using port 8080 (Amazon Linux)
+sudo netstat -tulpn | grep :8080
+# OR
+sudo ss -tulpn | grep :8080
 
 # Kill the process or use a different port
 python3 manage.py runserver 0.0.0.0:8081
@@ -349,6 +374,8 @@ aws sts get-caller-identity
   ```
 - **Port Configuration**: Cloud9 uses port 8080 by default. The application is configured to run on this port.
 - **No Hardcoded Credentials**: The project uses default AWS credentials from Cloud9 automatically.
+- **Amazon Linux**: This guide is optimized for Amazon Linux 2/2023. Package manager commands use `yum` (AL2) or `dnf` (AL2023).
+- **Amazon Linux**: This guide is optimized for Amazon Linux 2/2023. Package manager commands use `yum` (AL2) or `dnf` (AL2023).
 
 ---
 

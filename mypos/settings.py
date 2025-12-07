@@ -20,6 +20,22 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+# CSRF settings for Cloud9
+# Cloud9 uses dynamic subdomains like: https://[ID].vfs.cloud9.[region].amazonaws.com
+# Add your specific Cloud9 URL here (from the error message or browser address bar)
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://1319ddcff73146a496c752c092761686.vfs.cloud9.us-east-1.amazonaws.com',
+    # Add more Cloud9 URLs here if needed
+    # The Cloud9CsrfMiddleware will also try to auto-detect and add Cloud9 origins
+]
+
+# Additional CSRF settings for Cloud9 development
+# These settings help with Cloud9's proxy setup
+CSRF_COOKIE_SECURE = False  # Set to False for Cloud9 (uses HTTPS proxy)
+CSRF_COOKIE_SAMESITE = 'Lax'  # More permissive for Cloud9
+CSRF_USE_SESSIONS = False  # Use cookie-based CSRF tokens
+
 
 # Application definition
 
@@ -36,7 +52,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'mypos.csrf.Cloud9CsrfViewMiddleware',  # Custom Cloud9 CSRF middleware (replaces default)
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
