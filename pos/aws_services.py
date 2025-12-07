@@ -269,13 +269,12 @@ class S3Service:
     
     @staticmethod
     def create_bucket():
-        """Create S3 bucket if it doesn't exist"""
+        """Create S3 bucket if it doesn't exist and configure for public read access"""
         try:
             # Check if bucket exists
             try:
                 s3.head_bucket(Bucket=settings.S3_BUCKET_NAME)
                 ErrorHandler.log_success("S3 bucket already exists", settings.S3_BUCKET_NAME)
-                return
             except s3.exceptions.ClientError as e:
                 error_code = e.response['Error']['Code']
                 if error_code == '404':
@@ -292,14 +291,48 @@ class S3Service:
                     ErrorHandler.log_success("S3 bucket exists (access verified)", settings.S3_BUCKET_NAME)
                 else:
                     raise
+            
+            # Try to configure bucket policy for public read access (for product images)
+            # Note: This may fail if bucket policy is managed elsewhere or permissions don't allow - that's okay
+            try:
+                bucket_policy = {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Sid": "PublicReadGetObject",
+                            "Effect": "Allow",
+                            "Principal": "*",
+                            "Action": "s3:GetObject",
+                            "Resource": f"arn:aws:s3:::{settings.S3_BUCKET_NAME}/*"
+                        }
+                    ]
+                }
+                s3.put_bucket_policy(
+                    Bucket=settings.S3_BUCKET_NAME,
+                    Policy=json.dumps(bucket_policy)
+                )
+                ErrorHandler.log_success("Configured S3 bucket policy for public read", settings.S3_BUCKET_NAME)
+            except Exception as policy_error:
+                # Policy might already be set or we don't have permission - that's okay
+                # The ACL on individual objects will still work if bucket allows it
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.warning(f"Could not set bucket policy (may already be configured or need manual setup): {str(policy_error)}")
+                
         except Exception as e:
             raise ErrorHandler.handle_aws_error(e, "create_bucket", settings.S3_BUCKET_NAME)
     
     @staticmethod
     def upload_image(file, filename):
-        """Upload product image to S3"""
+        """Upload product image to S3 with public read access"""
         try:
-            s3.upload_fileobj(file, settings.S3_BUCKET_NAME, filename)
+            # Upload with public-read ACL so images can be accessed via URL
+            s3.upload_fileobj(
+                file, 
+                settings.S3_BUCKET_NAME, 
+                filename,
+                ExtraArgs={'ACL': 'public-read', 'ContentType': file.content_type if hasattr(file, 'content_type') else 'image/jpeg'}
+            )
             url = f"https://{settings.S3_BUCKET_NAME}.s3.{settings.AWS_REGION}.amazonaws.com/{filename}"
             ErrorHandler.log_success("upload_image", filename)
             return url

@@ -50,6 +50,25 @@ git reset --hard HEAD
 git pull origin main
 ```
 
+**If you get "divergent branches" error**, use one of these:
+
+**Option A: Merge (Recommended - safer)**
+```bash
+git pull origin main --no-rebase
+```
+
+**Option B: Rebase (Creates cleaner history)**
+```bash
+git pull origin main --rebase
+```
+
+**Option C: Set default behavior (one-time setup)**
+```bash
+# Set merge as default (recommended)
+git config pull.rebase false
+git pull origin main
+```
+
 **If you get a merge conflict**, you'll see a message like:
 ```
 Auto-merging filename.py
@@ -137,6 +156,33 @@ cd ~/MyPOS && git pull origin main
 ```bash
 git pull origin main
 ```
+
+### Issue: "divergent branches" or "Need to specify how to reconcile"
+
+**Solution**: Your local and remote branches have diverged. Use one of these:
+
+**Option 1: Merge (Recommended)**
+```bash
+git pull origin main --no-rebase
+```
+
+**Option 2: Rebase**
+```bash
+git pull origin main --rebase
+```
+
+**Option 3: Set default and pull**
+```bash
+git config pull.rebase false
+git pull origin main
+```
+
+**If you get merge conflicts after this:**
+1. Open the conflicted files in Cloud9
+2. Look for `<<<<<<<`, `=======`, `>>>>>>>` markers
+3. Edit to resolve conflicts
+4. Save files
+5. Run: `git add . && git commit -m "Resolve merge conflicts"`
 
 ### Issue: "Please commit your changes or stash them"
 
