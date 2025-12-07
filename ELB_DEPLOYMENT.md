@@ -418,11 +418,11 @@ sudo systemctl restart mypos
 
 ## Next Steps
 
-1. ✅ Set up HTTPS/SSL certificate (optional)
-2. ✅ Configure auto-scaling (optional)
-3. ✅ Set up CloudWatch alarms
-4. ✅ Configure backup strategy
-5. ✅ Set up CI/CD pipeline (optional)
+1. Set up HTTPS/SSL certificate (optional)
+2. Configure auto-scaling (optional)
+3. Set up CloudWatch alarms
+4. Configure backup strategy
+5. Set up CI/CD pipeline (optional)
 
 ---
 

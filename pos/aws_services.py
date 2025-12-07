@@ -167,6 +167,15 @@ class DynamoDBService:
     def add_transaction(transaction_data):
         """Add transaction to DynamoDB"""
         try:
+            # Get customer name if not already provided
+            customer_name = transaction_data.get('customer_name')
+            if not customer_name:
+                try:
+                    customer = DynamoDBService.get_customer(transaction_data['customer_id'])
+                    customer_name = customer['name'] if customer else None
+                except:
+                    customer_name = None
+            
             item = {
                 'transaction_id': {'S': transaction_data['transaction_id']},
                 'customer_id': {'S': transaction_data['customer_id']},
@@ -175,6 +184,10 @@ class DynamoDBService:
                 'status': {'S': transaction_data.get('status', 'completed')},
                 'created_at': {'S': datetime.now().isoformat()}
             }
+            
+            # Add customer_name if available
+            if customer_name:
+                item['customer_name'] = {'S': customer_name}
             
             dynamodb.put_item(
                 TableName=settings.DYNAMODB_TRANSACTIONS_TABLE,
@@ -196,7 +209,7 @@ class DynamoDBService:
             
             if 'Item' in response:
                 item = response['Item']
-                return {
+                transaction = {
                     'transaction_id': item['transaction_id']['S'],
                     'customer_id': item['customer_id']['S'],
                     'products': json.loads(item['products']['S']),
@@ -204,6 +217,19 @@ class DynamoDBService:
                     'status': item.get('status', {}).get('S', 'completed'),
                     'created_at': item.get('created_at', {}).get('S', '')
                 }
+                
+                # Get customer_name if stored in transaction
+                if 'customer_name' in item:
+                    transaction['customer_name'] = item['customer_name']['S']
+                else:
+                    # Look up customer name if not stored
+                    try:
+                        customer = DynamoDBService.get_customer(transaction['customer_id'])
+                        transaction['customer_name'] = customer['name'] if customer else None
+                    except:
+                        transaction['customer_name'] = None
+                
+                return transaction
             return None
         except Exception as e:
             raise ErrorHandler.handle_aws_error(e, "get_transaction", transaction_id)
@@ -216,14 +242,20 @@ class DynamoDBService:
             transactions = []
             
             for item in response.get('Items', []):
-                transactions.append({
+                transaction = {
                     'transaction_id': item['transaction_id']['S'],
                     'customer_id': item['customer_id']['S'],
                     'products': json.loads(item['products']['S']),
                     'total_amount': float(item['total_amount']['N']),
                     'status': item.get('status', {}).get('S', 'completed'),
                     'created_at': item.get('created_at', {}).get('S', '')
-                })
+                }
+                
+                # Get customer_name if stored in transaction
+                if 'customer_name' in item:
+                    transaction['customer_name'] = item['customer_name']['S']
+                
+                transactions.append(transaction)
             
             # Sort by created_at descending
             transactions.sort(key=lambda x: x['created_at'], reverse=True)
@@ -310,14 +342,41 @@ class SNSService:
     def send_notification(cls, message, subject="Transaction Notification"):
         """Send transaction notification via SNS"""
         try:
+            # Get or create topic
             topic_arn = cls.get_or_create_topic()
+            
+            if not topic_arn:
+                raise Exception("SNS topic ARN is None. Topic may not have been created.")
+            
+            # Validate message length (SNS has limits)
+            if len(message) > 262144:  # 256 KB limit
+                message = message[:262000] + "... (truncated)"
+            
+            # Publish message
             response = sns.publish(
                 TopicArn=topic_arn,
                 Message=message,
-                Subject=subject
+                Subject=subject[:100]  # Subject has 100 char limit
             )
-            ErrorHandler.log_success("send_notification", response['MessageId'])
-            return response['MessageId']
+            
+            if 'MessageId' in response:
+                ErrorHandler.log_success("send_notification", response['MessageId'])
+                return response['MessageId']
+            else:
+                raise Exception("SNS publish succeeded but no MessageId returned")
+                
+        except sns.exceptions.ClientError as e:
+            error_code = e.response.get('Error', {}).get('Code', '')
+            error_message = e.response.get('Error', {}).get('Message', str(e))
+            
+            if error_code == 'NotFound':
+                raise Exception(f"SNS topic not found. Please run 'python3 manage.py init_aws' to create the topic. Error: {error_message}")
+            elif error_code == 'AuthorizationError' or error_code == 'AccessDenied':
+                raise Exception(f"SNS access denied. Check IAM permissions for SNS Publish. Error: {error_message}")
+            elif error_code == 'InvalidParameter':
+                raise Exception(f"Invalid SNS parameters. Error: {error_message}")
+            else:
+                raise ErrorHandler.handle_aws_error(e, "send_notification", "SNS")
         except Exception as e:
             raise ErrorHandler.handle_aws_error(e, "send_notification", "SNS")
 
