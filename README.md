@@ -175,15 +175,19 @@ The project includes a custom error handling library (`error_handler`) that:
 
 ## Deployment with ELB
 
-For deployment using Elastic Load Balancer (ELB):
+For deployment using Elastic Load Balancer (ELB), see the complete guide:
 
-1. Create an EC2 instance or use Cloud9
-2. Install dependencies and configure the application
-3. Set up an Application Load Balancer in AWS
-4. Configure target groups pointing to your EC2 instances
-5. Update ALLOWED_HOSTS in settings.py to include your domain
-6. Set DEBUG = False for production
-7. Configure static files serving (use WhiteNoise or S3)
+📖 **[ELB_DEPLOYMENT.md](ELB_DEPLOYMENT.md)** - Complete step-by-step guide for deploying MyPOS behind an Application Load Balancer
+
+Quick steps:
+1. Create EC2 instances from your Cloud9 environment
+2. Deploy application to EC2 instances
+3. Set up Application Load Balancer (ALB)
+4. Configure Target Groups
+5. Update Django settings for production
+6. Configure Security Groups
+
+See ELB_DEPLOYMENT.md for detailed instructions.
 
 ## Troubleshooting
 

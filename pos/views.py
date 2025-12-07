@@ -237,11 +237,28 @@ def transaction_list(request):
         
         # Get customer names for each transaction
         for transaction in transactions:
-            try:
-                customer = DynamoDBService.get_customer(transaction['customer_id'])
-                transaction['customer_name'] = customer['name'] if customer else 'Unknown'
-            except:
-                transaction['customer_name'] = 'Unknown'
+            customer_id = transaction.get('customer_id', '')
+            customer_name = transaction.get('customer_name')  # Check if already stored in DynamoDB
+            
+            # If customer_name not stored in transaction, look it up from customers table
+            if not customer_name and customer_id:
+                try:
+                    customer = DynamoDBService.get_customer(customer_id)
+                    if customer and customer.get('name'):
+                        customer_name = customer['name']
+                        transaction['customer_name'] = customer_name
+                    else:
+                        # Customer not found in database
+                        transaction['customer_name'] = f"ID: {customer_id[:8]}..." if len(customer_id) > 8 else customer_id
+                except Exception as e:
+                    # If lookup fails, use customer ID
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f"Could not retrieve customer {customer_id}: {str(e)}")
+                    transaction['customer_name'] = f"ID: {customer_id[:8]}..." if len(customer_id) > 8 else customer_id
+            elif not customer_name:
+                # No customer_id available
+                transaction['customer_name'] = "N/A"
                 
     except POSError as e:
         messages.error(request, str(e))
@@ -296,6 +313,16 @@ def transaction_add(request):
                 if not transaction_products:
                     raise ErrorHandler.handle_validation_error("No valid products selected", "transaction")
                 
+                # Get customer name before creating transaction
+                customer_name = None
+                try:
+                    customer = DynamoDBService.get_customer(customer_id)
+                    customer_name = customer['name'] if customer else None
+                except Exception as e:
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.warning(f"Could not retrieve customer {customer_id} for transaction: {str(e)}")
+                
                 # Create transaction
                 transaction_id = str(uuid.uuid4())
                 transaction_data = {
@@ -305,6 +332,10 @@ def transaction_add(request):
                     'total_amount': total_amount,
                     'status': 'completed'
                 }
+                
+                # Add customer_name if available (will be stored in DynamoDB)
+                if customer_name:
+                    transaction_data['customer_name'] = customer_name
                 
                 DynamoDBService.add_transaction(transaction_data)
                 
@@ -323,9 +354,25 @@ Products: {len(transaction_products)} items
 Thank you for your purchase!
                     """
                     SNSService.send_notification(notification_message.strip(), "New Transaction - MyPOS")
+                except POSError as e:
+                    # Log the detailed error but don't fail the transaction
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"SNS Notification Error: {str(e)}")
+                    messages.warning(request, f"Transaction created but notification failed: {str(e)}")
                 except Exception as e:
-                    ErrorHandler.handle_aws_error(e, "send_transaction_notification", "SNS")
-                    messages.warning(request, "Transaction created but notification failed")
+                    # Log the detailed error
+                    import logging
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"SNS Notification Error: {str(e)}")
+                    error_msg = str(e)
+                    # Show a more user-friendly message
+                    if "AccessDenied" in error_msg or "Forbidden" in error_msg:
+                        messages.warning(request, "Transaction created but notification failed: Check AWS SNS permissions")
+                    elif "NotFound" in error_msg or "does not exist" in error_msg:
+                        messages.warning(request, "Transaction created but notification failed: SNS topic not found. Run 'python3 manage.py init_aws'")
+                    else:
+                        messages.warning(request, f"Transaction created but notification failed: {error_msg[:100]}")
                 
                 # Send CloudWatch metrics
                 try:
