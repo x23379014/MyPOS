@@ -1,6 +1,6 @@
 # Quick Start - Cloud9 Setup (Cheat Sheet)
 
-## 🚀 Quick Steps
+## Quick Steps
 
 ### 1. Push to GitHub (From Your Local Machine)
 
@@ -43,7 +43,7 @@ python3 manage.py runserver 0.0.0.0:8080
 
 ---
 
-## ⚠️ Common Issues
+## Common Issues
 
 **S3 Bucket Name Conflict?**
 ```bash
