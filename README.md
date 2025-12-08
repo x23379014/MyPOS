@@ -37,14 +37,6 @@ A simple and basic Point of Sale (POS) system built with Django and AWS services
 
 ## Installation
 
-### For Cloud9 Setup
-See **[CLOUD9_SETUP.md](CLOUD9_SETUP.md)** for complete Cloud9 setup instructions including:
-- Pushing project to GitHub
-- Setting up Cloud9 environment
-- Cloning and running in Cloud9
-
-### Quick Setup (Local or Cloud9)
-
 1. Clone or download this project to your Cloud9 environment
 
 2. Install dependencies:
@@ -154,17 +146,6 @@ MyPOS/
    - Record metrics in CloudWatch
 5. View transaction details by clicking "View"
 
-## AWS Academy Learners Lab Notes
-
-- This project uses default AWS credentials from the Cloud9 environment
-- No hardcoded credentials are required
-- All AWS services will use the default region (us-east-1) unless changed in settings.py
-- Make sure your AWS Academy account has permissions for:
-  - DynamoDB (create tables, read/write items)
-  - S3 (create bucket, upload files)
-  - SNS (create topics, publish messages)
-  - CloudWatch (put metrics)
-
 ## Error Handling
 
 The project includes a custom error handling library (`error_handler`) that:
@@ -177,8 +158,6 @@ The project includes a custom error handling library (`error_handler`) that:
 
 For deployment using Elastic Load Balancer (ELB), see the complete guide:
 
-📖 **[ELB_DEPLOYMENT.md](ELB_DEPLOYMENT.md)** - Complete step-by-step guide for deploying MyPOS behind an Application Load Balancer
-
 Quick steps:
 1. Create EC2 instances from your Cloud9 environment
 2. Deploy application to EC2 instances
@@ -186,35 +165,3 @@ Quick steps:
 4. Configure Target Groups
 5. Update Django settings for production
 6. Configure Security Groups
-
-See ELB_DEPLOYMENT.md for detailed instructions.
-
-## Troubleshooting
-
-### AWS Credentials Error
-- Ensure you're running in Cloud9 or have AWS credentials configured
-- Check that your AWS Academy session is active
-
-### DynamoDB Table Not Found
-- Tables are created automatically on first use
-- Check AWS permissions for DynamoDB
-
-### S3 Upload Fails
-- Ensure the bucket name is unique (S3 bucket names are globally unique)
-- Check AWS permissions for S3
-
-### SNS Notifications Not Working
-- Check that SNS topic was created successfully
-- Verify AWS permissions for SNS
-
-## License
-
-This project is created for educational purposes as part of AWS Academy Learners Lab.
-
-## Support
-
-For issues related to:
-- **AWS Services**: Check AWS Academy documentation
-- **Django**: Refer to Django documentation
-- **Project-specific**: Review the code comments and error messages
-
